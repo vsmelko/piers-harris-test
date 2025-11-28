@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piers-Harris 2 Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f8f8;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+        .question {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .scale-result {
+            padding: 8px 0;
+            font-size: 18px;
+        }
+        button {
+            margin-top: 25px;
+            padding: 12px 22px;
+            font-size: 18px;
+            background: #222;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #000;
+        }
+        .hidden {
+            display: none;
+        }
+        .results {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Piers-Harris 2 – Sebahodnotiaci dotazník</h1>
+        <p>Vyber odpoveď Áno/Nie pre každú položku.</p>
+        <form id="testForm"></form>
+        <button id="btnEvaluate">Vyhodnotiť</button>
+        <div id="results" class="results hidden"></div>
+    </div>
+
+    <script>
+        const scales = {
+            BEH: [11, 14, 17, 22, 27, 32, 36, 40, 43, 49, 55],
+            INT: [13, 16, 18, 26, 31, 33, 41, 45, 48, 54, 59],
+            PHY: [5, 10, 20, 23, 28, 37, 39, 44, 50, 57],
+            FRE: [6, 9, 15, 19, 24, 29, 35, 38, 47, 53, 56],
+            POP: [2, 7, 12, 21, 25, 30, 34, 42, 46, 52, 58],
+            HAP: [1, 3, 4, 8, 33, 51, 60]
+        };
+
+        const form = document.getElementById("testForm");
+        for (let i = 1; i <= 60; i++) {
+            const div = document.createElement("div");
+            div.classList.add("question");
+            div.innerHTML = `
+                <label><strong>${i}.</strong></label> &nbsp;&nbsp;
+                <label><input type="radio" name="q${i}" value="1"> Áno</label>
+                &nbsp;&nbsp;
+                <label><input type="radio" name="q${i}" value="0"> Nie</label>
+            `;
+            form.appendChild(div);
+        }
+
+        document.getElementById("btnEvaluate").addEventListener("click", () => {
+            const resultsDiv = document.getElementById("results");
+            const answers = {};
+
+            for (let i = 1; i <= 60; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                answers[i] = selected ? Number(selected.value) : null;
+            }
+
+            const missing = Object.values(answers).filter(v => v === null).length;
+            if (missing > 0) {
+                alert("Vyplň všetky otázky (chýba: " + missing + ")");
+                return;
+            }
+
+            let output = "<h2>Výsledky</h2>";
+            for (const scale in scales) {
+                let score = 0;
+                scales[scale].forEach(item => {
+                    score += answers[item];
+                });
+                output += `<div class="scale-result"><strong>${scale}</strong>: ${score}</div>`;
+            }
+
+            resultsDiv.innerHTML = output;
+            resultsDiv.classList.remove("hidden");
+        });
+    </script>
+</body>
+</html>
