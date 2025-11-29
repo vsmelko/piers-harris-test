@@ -1,142 +1,169 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piers-Harris 2 Test</title>
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piers-Harris 2 – Test</title>
 
-        .error {
-                background-color: #ffe1e1;
-                border-left: 4px solid #ff4d4d;
-            }
-        body {
-            font-family: Arial, sans-serif;
-            background: #f8f8f8;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h1 {
-            font-size: 26px;
-            margin-bottom: 10px;
-        }
-        .question {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .scale-result {
-            padding: 8px 0;
-            font-size: 18px;
-        }
-        button {
-            margin-top: 25px;
-            padding: 12px 22px;
-            font-size: 18px;
-            background: #222;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #000;
-        }
-        .hidden {
-            display: none;
-        }
-        .results {
-            margin-top: 30px;
-            padding-top: 10px;
-            border-top: 2px solid #ddd;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Piers-Harris 2 – Sebahodnotiaci dotazník</h1>
-        <p>Vyber odpoveď Áno/Nie pre každú položku.</p>
-        <form id="testForm"></form>
-        <button id="btnEvaluate">Vyhodnotiť</button>
-        <div id="results" class="results hidden"></div>
-    </div>
-
-    <script>
-    const scales = {
-        BEH: [11, 14, 17, 22, 27, 32, 36, 40, 43, 49, 55],
-        INT: [13, 16, 18, 26, 31, 33, 41, 45, 48, 54, 59],
-        PHY: [5, 10, 20, 23, 28, 37, 39, 44, 50, 57],
-        FRE: [6, 9, 15, 19, 24, 29, 35, 38, 47, 53, 56],
-        POP: [2, 7, 12, 21, 25, 30, 34, 42, 46, 52, 58],
-        HAP: [1, 3, 4, 8, 33, 51, 60]
-    };
-
-    // Vygenerujeme 60 otázok
-    const form = document.getElementById("testForm");
-
-    for (let i = 1; i <= 60; i++) {
-        const div = document.createElement("div");
-        div.classList.add("question");
-        div.id = `qrow-${i}`;
-
-        div.innerHTML = `
-            <label><strong>${i}.</strong></label> &nbsp;&nbsp;
-            <label><input type="radio" name="q${i}" value="1"> Áno</label>
-            &nbsp;&nbsp;
-            <label><input type="radio" name="q${i}" value="0"> Nie</label>
-        `;
-
-        // Keď používateľ klikne na ÁNO/NIE → odstráni chybu
-        div.addEventListener("change", () => {
-            div.classList.remove("error");
-        });
-
-        form.appendChild(div);
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, #e7f3ff, #cfe6ff);
+        margin: 0;
+        padding: 0;
     }
 
-    document.getElementById("btnEvaluate").addEventListener("click", () => {
-        const resultsDiv = document.getElementById("results");
+    .container {
+        max-width: 750px;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        border: 1px solid #d0e4ff;
+    }
 
-        let answers = {};
-        let missing = [];
+    h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: #0a3d62;
+        text-align: center;
+    }
 
-        // Kontrola nevyplnených otázok
-        for (let i = 1; i <= 60; i++) {
-            const selected = document.querySelector(`input[name="q${i}"]:checked`);
-            answers[i] = selected ? Number(selected.value) : null;
+    .instructions {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 17px;
+        color: #1b4f72;
+    }
 
-            if (answers[i] === null) {
-                missing.push(i);
-                document.getElementById(`qrow-${i}`).classList.add("error");
-            }
+    .question {
+        padding: 12px 14px;
+        border-bottom: 1px solid #eee;
+        border-radius: 8px;
+        transition: 0.25s;
+    }
+
+    .question.active {
+        background: #e0f0ff;
+        border: 1px solid #4da3ff;
+        box-shadow: 0 0 6px rgba(0,123,255,0.4);
+    }
+
+    button {
+        margin-top: 25px;
+        padding: 14px 26px;
+        font-size: 20px;
+        background: linear-gradient(to right, #4da3ff, #007bff);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+        background: linear-gradient(to right, #6bb7ff, #3395ff);
+    }
+
+    .results {
+        margin-top: 30px;
+        padding-top: 15px;
+        border-top: 2px solid #d6eaff;
+    }
+
+    .scale-result {
+        font-size: 19px;
+        padding: 6px 0;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Piers-Harris 2 – Sebahodnotiaci dotazník</h1>
+    <div class="instructions">
+        Stláčajte <strong>1 (Áno)</strong> alebo <strong>0 (Nie)</strong>.<br>
+        Otázky sa budú automaticky posúvať.
+    </div>
+
+    <form id="testForm"></form>
+
+    <button id="btnEvaluate">Vyhodnotiť výsledky</button>
+
+    <div id="results" class="results"></div>
+</div>
+
+<script>
+const scales = {
+    BEH: [11, 14, 17, 22, 27, 32, 36, 40, 43, 49, 55],
+    INT: [13, 16, 18, 26, 31, 33, 41, 45, 48, 54, 59],
+    PHY: [5, 10, 20, 23, 28, 37, 39, 44, 50, 57],
+    FRE: [6, 9, 15, 19, 24, 29, 35, 38, 47, 53, 56],
+    POP: [2, 7, 12, 21, 25, 30, 34, 42, 46, 52, 58],
+    HAP: [1, 3, 4, 8, 33, 51, 60]
+};
+
+const form = document.getElementById("testForm");
+
+// answers[1..60]
+let answers = {};
+let activeQuestion = 1;
+
+// Generate questions
+for (let i = 1; i <= 60; i++) {
+    const div = document.createElement("div");
+    div.classList.add("question");
+    div.id = `q-${i}`;
+    div.innerHTML = `<strong>${i}.</strong> (1 = Áno, 0 = Nie)`;
+    form.appendChild(div);
+}
+
+// Highlight first question
+function highlightActive() {
+    for (let i = 1; i <= 60; i++) {
+        document.getElementById(`q-${i}`).classList.remove("active");
+    }
+    document.getElementById(`q-${activeQuestion}`).classList.add("active");
+}
+highlightActive();
+
+// Keyboard input
+document.addEventListener("keydown", function(e) {
+    if (e.key === "1" || e.key === "0") {
+        answers[activeQuestion] = Number(e.key);
+
+        // go to next question
+        if (activeQuestion < 60) {
+            activeQuestion++;
         }
 
-        if (missing.length > 0) {
-            alert("Vyplň všetky otázky.");
-            return;
-        }
+        highlightActive();
+    }
+});
 
-        // Výpočet skóre
-        let output = "<h2>Výsledky</h2>";
+// Evaluate
+document.getElementById("btnEvaluate").addEventListener("click", () => {
+    if (Object.keys(answers).length < 60) {
+        alert("Ešte si nevyplnil všetky otázky.");
+        return;
+    }
 
-        for (let scale in scales) {
-            let score = 0;
-            scales[scale].forEach(item => score += answers[item]);
-            output += `<div class="scale-result"><strong>${scale}</strong>: ${score}</div>`;
-        }
+    let output = "<h2>Výsledky</h2>";
 
-        resultsDiv.innerHTML = output;
-        resultsDiv.classList.remove("hidden");
-    });
+    for (let scale in scales) {
+        let score = 0;
+        scales[scale].forEach(item => {
+            score += answers[item];
+        });
+        output += `<div class="scale-result"><strong>${scale}</strong>: ${score}</div>`;
+    }
+
+    document.getElementById("results").innerHTML = output;
+});
 </script>
 
 </body>
 </html>
-
