@@ -55,7 +55,13 @@
 
     .answer-label {
         font-weight: bold;
-        color: #0a3d62;
+        margin-left: 10px;
+    }
+
+    .explain-label {
+        font-size: 14px;
+        color: #1b4f72;
+        opacity: 0.7;
     }
 
     button {
@@ -94,7 +100,7 @@
     <h1>Piers-Harris 2 – Sebahodnotiaci dotazník</h1>
     <div class="instructions">
         Stláčaj <strong>1 (ÁNO)</strong> alebo <strong>0 (NIE)</strong>.<br>
-        Otázky sa budú automaticky posúvať a zaznačia tvoju odpoveď.
+        Aktuálna otázka je zvýraznená modrou.
     </div>
 
     <form id="testForm"></form>
@@ -124,19 +130,30 @@ for (let i = 1; i <= 60; i++) {
     div.classList.add("question");
     div.id = `q-${i}`;
     div.innerHTML = `
-        <div><strong>${i}.</strong> (1 = Áno, 0 = Nie)</div>
-        <div class="answer-label" id="ans-${i}"></div>
+        <div>
+            <strong>${i}.</strong>
+            <span class="answer-label" id="ans-${i}"></span>
+        </div>
+        <div class="explain-label">1 = Áno, 0 = Nie</div>
     `;
     form.appendChild(div);
 }
 
-// Highlight current question
 function highlightActive() {
     for (let i = 1; i <= 60; i++) {
         document.getElementById(`q-${i}`).classList.remove("active");
     }
-    document.getElementById(`q-${activeQuestion}`).classList.add("active");
+
+    const q = document.getElementById(`q-${activeQuestion}`);
+    q.classList.add("active");
+
+    // AUTOMATICKÉ SCROLLOVANIE – vždy ukáž aktuálnu otázku
+    q.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
 }
+
 highlightActive();
 
 // Handle keyboard input
@@ -145,12 +162,12 @@ document.addEventListener("keydown", function(e) {
         const value = Number(e.key);
         answers[activeQuestion] = value;
 
-        // Write the selected option next to the question
+        // write answer next to question number
         const ansLabel = document.getElementById(`ans-${activeQuestion}`);
         ansLabel.textContent = value === 1 ? "ÁNO" : "NIE";
         ansLabel.style.color = value === 1 ? "#007bff" : "#ff4d4d";
 
-        // Move to next
+        // go to next
         if (activeQuestion < 60) {
             activeQuestion++;
         }
@@ -159,7 +176,6 @@ document.addEventListener("keydown", function(e) {
     }
 });
 
-// Evaluate button
 document.getElementById("btnEvaluate").addEventListener("click", () => {
     if (Object.keys(answers).length < 60) {
         alert("Ešte si nevyplnil všetky otázky.");
@@ -170,9 +186,7 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
 
     for (let scale in scales) {
         let score = 0;
-        scales[scale].forEach(item => {
-            score += answers[item];
-        });
+        scales[scale].forEach(item => score += answers[item]);
         output += `<div class="scale-result"><strong>${scale}</strong>: ${score}</div>`;
     }
 
