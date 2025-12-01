@@ -251,6 +251,18 @@ function interpret(T) {
 // GENERÁCIA OTÁZOK
 // -----------------------------------------
 
+
+// -----------------------------------------
+// CLICK → SET ACTIVE QUESTION (oprava odpovede)
+// -----------------------------------------
+
+for (let i = 1; i <= 60; i++) {
+    document.getElementById(`q-${i}`).addEventListener("click", () => {
+        activeQuestion = i;
+        highlightActive();
+    });
+}        
+
 let answers = {};
 let activeQuestion = 1;
 
