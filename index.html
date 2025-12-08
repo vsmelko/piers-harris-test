@@ -128,15 +128,6 @@
         color: #0a3d62;
     }
 
-    #radarContainer {
-        margin-top: 45px;
-        padding: 20px 0;
-    }
-
-    canvas {
-        max-width: 100%;
-        max-height: 430px;
-    }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -157,14 +148,19 @@
     <button id="btnEvaluate">Vyhodnotiť výsledky</button>
 
     <div id="results"></div>
-
-    <div id="radarContainer">
-        <canvas id="radarChart"></canvas>
-    </div>
 </div>
 
 <script>
 /* ------------- KEYING ------------- */
+const SCALE_NAMES = {
+    BEH: "Chování a sebekontrola",
+    INT: "Intelekt a školní status",
+    PHY: "Fyzický vzhled a atributy",
+    FRE: "Absence úzkosti",
+    POP: "Popularita",
+    HAP: "Štěstí a spokojenost"
+};
+
 
 const keyedYes = [
     2,5,9,12,15,16,18,22,24,26,28,
@@ -347,81 +343,82 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
     let yesCount = Object.values(answers).filter(v => v === 1).length;
     let noCount = 60 - yesCount;
 
-    /* --- BUILD RESULTS HTML --- */
+/* --- BUILD RESULTS HTML --- */
+
+out += `
+<div class="result-card">
+
+    <div class="result-title">Výsledky</div>
+
+    <table class="subscale-table" style="margin-bottom:18px;">
+        <tr><th style="width:220px;">Parameter</th><th>Hodnota</th></tr>
+
+        <tr>
+            <td><strong>Validita</strong></td>
+            <td>${incErrors === 0 ? "Test je platný" : "NEPLATNÝ – inkonzistencií: " + incErrors}</td>
+        </tr>
+
+        <tr>
+            <td><strong>TOT – Celkové RAW</strong></td>
+            <td>${totRaw}</td>
+        </tr>
+
+        <tr>
+            <td><strong>TOT – T skóre</strong></td>
+            <td>${totT} (${interpretTOT(totT)})</td>
+        </tr>
+
+        <tr>
+            <td><strong>RES – počet ÁNO</strong></td>
+            <td>${yesCount}</td>
+        </tr>
+
+        <tr>
+            <td><strong>RES – počet NIE</strong></td>
+            <td>${noCount}</td>
+        </tr>
+    </table>
+
+    <div class="result-title" style="margin-top:25px;">Subškály</div>
+
+    <table class="subscale-table">
+        <tr>
+            <th>Skratka</th>
+            <th>Názov škály</th>
+            <th>RAW</th>
+            <th>T</th>
+            <th>Interpretácia</th>
+        </tr>
+`;
+
+let tScores = [];
+
+for (let scale in scales) {
+    let raw = 0;
+    scales[scale].forEach(q => raw += scoreItem(q));
+
+    let T = T_TABLE[scale][raw] ?? null;
+    tScores.push(T ?? 0);
 
     out += `
-        <div class="result-card">
-            <div class="result-title">Validita</div>
-            <div class="result-text">
-                ${incErrors === 0 ? "Test je platný" : "NEPLATNÝ – inkonzistencií: " + incErrors}
-            </div>
-        </div>
-
-        <div class="result-card">
-            <div class="result-title">Celkové skóre (TOT)</div>
-            <div class="result-text">RAW skóre: <strong>${totRaw}</strong></div>
-            <div class="result-text">T-skóre: <strong>${totT}</strong></div>
-            <div class="result-text">Interpretácia: <strong>${interpretTOT(totT)}</strong></div>
-        </div>
-
-        <div class="result-card">
-            <div class="result-title">RES – Štýl odpovedí</div>
-            <div class="result-text">Počet ÁNO: <strong>${yesCount}</strong></div>
-            <div class="result-text">Počet NIE: <strong>${noCount}</strong></div>
-        </div>
-
-        <div class="result-card">
-            <div class="result-title">Subškály</div>
-
-            <table class="subscale-table">
-                <tr>
-                    <th>Škála</th>
-                    <th>RAW</th>
-                    <th>T</th>
-                    <th>Interpretácia</th>
-                </tr>
+        <tr>
+            <td><strong>${scale}</strong></td>
+            <td>${SCALE_NAMES[scale]}</td>
+            <td>${raw}</td>
+            <td>${T}</td>
+            <td>${interpretSubscale(T)}</td>
+        </tr>
     `;
+}
 
-    let tScores = [];
+out += `
+    </table>
+</div>
+`;
 
-    for (let scale in scales) {
-        let raw = 0;
-        scales[scale].forEach(q => raw += scoreItem(q));
-        let T = T_TABLE[scale][raw] ?? null;
-        tScores.push(T ?? 0);
-
-        out += `
-            <tr>
-                <td>${scale}</td>
-                <td>${raw}</td>
-                <td>${T}</td>
-                <td>${interpretSubscale(T)}</td>
-            </tr>
-        `;
-    }
-
-    out += `</table></div>`;
 
     document.getElementById("results").innerHTML = out;
 
-    /* RADAR CHART */
-    new Chart(document.getElementById("radarChart"), {
-        type: 'radar',
-        data: {
-            labels: ['BEH','INT','PHY','FRE','POP','HAP'],
-            datasets: [{
-                label: 'T-skóre',
-                data: tScores,
-                fill: true,
-                backgroundColor: "rgba(0,123,255,0.25)",
-                borderColor: "#007bff",
-                pointBackgroundColor: "#007bff"
-            }]
-        },
-        options: {
-            scales: { r: { suggestedMin: 30, suggestedMax: 80 } }
-        }
-    });
 
 });
 </script>
