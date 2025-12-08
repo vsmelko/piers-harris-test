@@ -8,19 +8,19 @@
 <style>
     body {
         font-family: Arial, sans-serif;
-        background: linear-gradient(to bottom right, #e7f3ff, #cfe6ff);
+        background: #f2f6fc;
         margin: 0;
         padding: 0;
     }
 
     .container {
-        max-width: 850px;
+        max-width: 900px;
         margin: 40px auto;
         background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-        border: 1px solid #d0e4ff;
+        padding: 35px;
+        border-radius: 14px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+        border: 1px solid #dbe7ff;
     }
 
     h1 {
@@ -29,7 +29,6 @@
         color: #0a3d62;
         text-align: center;
         font-weight: 900;
-        letter-spacing: 0.5px;
     }
 
     .instructions {
@@ -50,9 +49,9 @@
     }
 
     .question.active {
-        background: #e0f0ff;
+        background: #e9f3ff;
         border: 1px solid #4da3ff;
-        box-shadow: 0 0 6px rgba(0,123,255,0.4);
+        box-shadow: 0 0 8px rgba(0,123,255,0.35);
     }
 
     .answer-label {
@@ -71,40 +70,72 @@
         margin-top: 25px;
         padding: 16px 26px;
         font-size: 20px;
-        background: linear-gradient(to right, #4da3ff, #007bff);
+        background: #007bff;
         color: white;
         border: none;
         border-radius: 8px;
         cursor: pointer;
         width: 100%;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
         font-weight: bold;
-        letter-spacing: 0.5px;
     }
 
     button:hover {
-        background: linear-gradient(to right, #6bb7ff, #3395ff);
+        background: #0d86ff;
     }
 
-    .results {
-        margin-top: 30px;
-        padding-top: 15px;
-        border-top: 2px solid #d6eaff;
+    /* ---- RESULTS STYLING ---- */
+    #results {
+        margin-top: 35px;
     }
 
-    .scale-result {
-        font-size: 19px;
-        padding: 6px 0;
+    .result-card {
+        background: #f7faff;
+        border: 1px solid #d4e5ff;
+        padding: 18px 22px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
+
+    .result-title {
+        font-weight: bold;
+        font-size: 20px;
+        color: #0a3d62;
+        margin-bottom: 8px;
+    }
+
+    .result-text {
+        font-size: 17px;
+        color: #123;
+        margin: 4px 0;
+    }
+
+    .subscale-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    .subscale-table th, .subscale-table td {
+        padding: 10px;
+        border-bottom: 1px solid #e4ecf7;
+        text-align: left;
+    }
+
+    .subscale-table th {
+        background: #eef5ff;
+        font-weight: bold;
+        color: #0a3d62;
     }
 
     #radarContainer {
-        margin-top: 40px;
+        margin-top: 45px;
         padding: 20px 0;
     }
 
     canvas {
         max-width: 100%;
-        max-height: 450px;
+        max-height: 430px;
     }
 </style>
 
@@ -118,24 +149,22 @@
 
     <div class="instructions">
         Stláčaj <strong>1 (ÁNO)</strong> alebo <strong>0 (NIE)</strong>.<br>
-        Aktuálna otázka je vždy zvýraznená modrou.
+        Aktuálna otázka je zvýraznená modrou.
     </div>
 
     <form id="testForm"></form>
 
     <button id="btnEvaluate">Vyhodnotiť výsledky</button>
 
-    <div id="results" class="results"></div>
+    <div id="results"></div>
 
     <div id="radarContainer">
         <canvas id="radarChart"></canvas>
     </div>
 </div>
 
-    <script>
-// -----------------------------------------
-// KEYING (scored YES / scored NO)
-// -----------------------------------------
+<script>
+/* ------------- KEYING ------------- */
 
 const keyedYes = [
     2,5,9,12,15,16,18,22,24,26,28,
@@ -148,9 +177,7 @@ const keyedNo = [
     36,37,38,40,43,45,47,48,51,52,56,57,58,59
 ];
 
-// -----------------------------------------  pozor pre pop otazka 39 sa pocita bod ked je nie pre pozitivne sebepojeti
-// SUBSCALE ITEMS
-// -----------------------------------------
+/* ------------- SUBSCALES ------------- */
 
 const scales = {
     BEH: [12,13,14,18,19,20,27,30,36,38,45,48,58,60],
@@ -161,10 +188,7 @@ const scales = {
     HAP: [2,8,28,31,35,40,42,49,53,60]
 };
 
-
-// -----------------------------------------
-// VALIDITA – presné kombinácie inkonzistencie
-// -----------------------------------------
+/* ------------- VALIDITA – INKONZISTENCIE ------------- */
 
 const INC_PAIRS = [
     { a: 1,  b: 47, badA: 0, badB: 1 },
@@ -184,80 +208,29 @@ const INC_PAIRS = [
     { a: 53, b: 60, badA: 1, badB: 0 }
 ];
 
-
+/* ------------- T-TABLES ------------- */
 
 const T_TABLE = {
-
-TOT: {
-    0:20, 1:20, 2:20, 3:20, 4:20,
-    5:20, 6:20, 7:20, 8:20, 9:20,
-    10:21, 11:22, 12:23,
-    13:24, 14:25, 15:26, 16:27, 17:28,
-    18:29, 19:30, 20:31, 21:32, 22:33,
-    23:34, 24:35, 25:35,
-    26:36, 27:37, 28:38, 29:39, 30:40,
-    31:41, 32:42, 33:43, 34:44, 35:45,
-    36:46, 37:47, 38:48,
-    39:49, 40:50, 41:51, 42:52, 43:53,
-    44:54, 45:55, 46:56, 47:57, 48:57,
-    49:58, 50:59,
-    51:60, 52:61, 53:62, 54:63,
-    55:64, 56:65, 57:66, 58:67, 59:68
-},
-
-
-
-    BEH: {
-        0: 20,
-        1: 21,
-        2: 22,
-        3: 26,
-        4: 29,
-        5: 32,
-        6: 36,
-        7: 39,
-        8: 42,
-        9: 46,
-        10: 49,
-        11: 52,
-        12: 56,
-        13: 59,
-        14: 62
+    TOT: {
+        0:20,1:20,2:20,3:20,4:20,5:20,6:20,7:20,8:20,9:20,
+        10:21,11:22,12:23,13:24,14:25,15:26,16:27,17:28,
+        18:29,19:30,20:31,21:32,22:33,23:34,24:35,25:35,
+        26:36,27:37,28:38,29:39,30:40,31:41,32:42,33:43,
+        34:44,35:45,36:46,37:47,38:48,39:49,40:50,41:51,
+        42:52,43:53,44:54,45:55,46:56,47:57,48:57,49:58,
+        50:59,51:60,52:61,53:62,54:63,55:64,56:65,57:66,
+        58:67,59:68
     },
 
-    INT: {
-        0:21, 1:24, 2:27, 3:30, 4:34,
-        5:36, 6:39, 7:42, 8:45, 9:48,
-        10:51, 11:54, 12:57, 13:60, 14:63, 15:66, 16:68
-    },
-
-    PHY: {
-        0:27, 1:30, 2:34, 3:37, 4:40,
-        5:44, 6:47, 7:51, 8:54, 9:57,
-        10:61, 11:64
-    },
-
-    FRE: {
-        0:25, 1:28, 2:31, 3:33, 4:36,
-        5:39, 6:42, 7:45, 8:48, 9:51,
-        10:53, 11:56, 12:59, 13:62, 14:65
-    },
-
-    POP: {
-        0:20, 1:24, 2:28, 3:31, 4:35,
-        5:38, 6:42, 7:45, 8:49, 9:52,
-        10:56, 11:60, 12:63
-    },
-
-    HAP: {
-        0:20, 1:22, 2:26, 3:30, 4:34,
-        5:38, 6:43, 7:47, 8:51, 9:55, 10:59
-    }
+    BEH: {0:20,1:21,2:22,3:26,4:29,5:32,6:36,7:39,8:42,9:46,10:49,11:52,12:56,13:59,14:62},
+    INT: {0:21,1:24,2:27,3:30,4:34,5:36,6:39,7:42,8:45,9:48,10:51,11:54,12:57,13:60,14:63,15:66,16:68},
+    PHY: {0:27,1:30,2:34,3:37,4:40,5:44,6:47,7:51,8:54,9:57,10:61,11:64},
+    FRE: {0:25,1:28,2:31,3:33,4:36,5:39,6:42,7:45,8:48,9:51,10:53,11:56,12:59,13:62,14:65},
+    POP: {0:20,1:24,2:28,3:31,4:35,5:38,6:42,7:45,8:49,9:52,10:56,11:60,12:63},
+    HAP: {0:20,1:22,2:26,3:30,4:34,5:38,6:43,7:47,8:51,9:55,10:59}
 };
 
-// -----------------------------------------
-// INTERPRETÁCIA T-skóre
-// -----------------------------------------
+/* ------------- INTERPRETÁCIA ------------- */
 
 function interpretTOT(T) {
     if (T >= 70) return "Výrazný nadpriemer";
@@ -269,9 +242,6 @@ function interpretTOT(T) {
     return "Výrazný podpriemer";
 }
 
-// -----------------------------------------
-// INTERPRETÁCIA T-skóre — Subškály
-// -----------------------------------------
 function interpretSubscale(T) {
     if (T >= 56) return "Nadpriemer";
     if (T >= 45) return "Priemer";
@@ -280,17 +250,13 @@ function interpretSubscale(T) {
     return "Výrazný podpriemer";
 }
 
-
-// -----------------------------------------
-// GENERÁCIA OTÁZOK
-// -----------------------------------------
+/* ------------- GENERATE QUESTIONS ------------- */
 
 let answers = {};
 let activeQuestion = 1;
 
 const form = document.getElementById("testForm");
 
-// 1️⃣ najprv vygenerujeme otázky
 for (let i = 1; i <= 60; i++) {
     const div = document.createElement("div");
     div.classList.add("question");
@@ -305,7 +271,6 @@ for (let i = 1; i <= 60; i++) {
     form.appendChild(div);
 }
 
-// 2️⃣ až teraz môžeme pridať click-listenery
 for (let i = 1; i <= 60; i++) {
     document.getElementById(`q-${i}`).addEventListener("click", () => {
         activeQuestion = i;
@@ -313,26 +278,16 @@ for (let i = 1; i <= 60; i++) {
     });
 }
 
-// -----------------------------------------
-// HIGHLIGHT ACTIVE
-// -----------------------------------------
-
 function highlightActive() {
     for (let i = 1; i <= 60; i++) {
         document.getElementById(`q-${i}`).classList.remove("active");
     }
-    const q = document.getElementById(`q-${activeQuestion}`);
-    q.classList.add("active");
-    q.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById(`q-${activeQuestion}`).classList.add("active");
 }
 
-// 3️⃣ označíme prvú otázku
 highlightActive();
 
-
-// -----------------------------------------
-// KEYBOARD INPUT 1 / 0
-// -----------------------------------------
+/* ------------- ANSWERS VIA KEYBOARD ------------- */
 
 document.addEventListener("keydown", function(e) {
     if (e.key === "1" || e.key === "0") {
@@ -348,9 +303,7 @@ document.addEventListener("keydown", function(e) {
     }
 });
 
-// -----------------------------------------
-// EVALUATE
-// -----------------------------------------
+/* ------------- EVALUATE ------------- */
 
 document.getElementById("btnEvaluate").addEventListener("click", () => {
 
@@ -359,56 +312,66 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         return;
     }
 
-    const resultsDiv = document.getElementById("results");
-    let out = "<h2>Výsledky</h2>";
+    let out = "";
 
-// presný výpočet inkonzistencie podľa manuálu
+    /* VALIDITA */
     let incErrors = 0;
 
     INC_PAIRS.forEach(p => {
-        const A = answers[p.a];
-        const B = answers[p.b];
-
-        // inkonzistentné je IBA ak odpovede presne sedia na definovaný "zlý vzorec"
-        if (A === p.badA && B === p.badB) {
+        if (answers[p.a] === p.badA && answers[p.b] === p.badB) {
             incErrors++;
         }
     });
 
-    out += `<p><strong>Validita:</strong> ${
-        incErrors === 0 ? "Test je platný" : "NEPLATNÝ – inkonzistencií: " + incErrors
-    }</p>`;
-
-    // SCORING FUNCTION
+    /* SCORING */
     function scoreItem(num) {
         if (keyedYes.includes(num)) return answers[num] === 1 ? 1 : 0;
         if (keyedNo.includes(num))  return answers[num] === 0 ? 1 : 0;
         return 0;
     }
 
-    // TOT
     let totRaw = 0;
     for (let i = 1; i <= 60; i++) totRaw += scoreItem(i);
+    let totT = T_TABLE.TOT[totRaw];
 
-    const totT = T_TABLE.TOT[totRaw] ?? null;
+    /* RES – Response Style */
+    let yesCount = Object.values(answers).filter(v => v === 1).length;
+    let noCount = 60 - yesCount;
 
-    out += `<p><strong>TOT RAW:</strong> ${totRaw}, 
-            <strong>TOT T:</strong> ${totT} 
-            (${totT !== null ? interpretTOT(totT) : "N/A"})</p>`;
+    /* --- BUILD RESULTS HTML --- */
 
-    // RES – Response Style (počet ÁNO a NIE)
-        let yesCount = Object.values(answers).filter(v => v === 1).length;
-        let noCount = 60 - yesCount;
+    out += `
+        <div class="result-card">
+            <div class="result-title">Validita</div>
+            <div class="result-text">
+                ${incErrors === 0 ? "Test je platný" : "NEPLATNÝ – inkonzistencií: " + incErrors}
+            </div>
+        </div>
 
-        out += `
-            <h3>RES – Response Style</h3>
-            <p><strong>Počet ÁNO:</strong> ${yesCount}</p>
-            <p><strong>Počet NIE:</strong> ${noCount}</p>
-        `;
+        <div class="result-card">
+            <div class="result-title">Celkové skóre (TOT)</div>
+            <div class="result-text">RAW skóre: <strong>${totRaw}</strong></div>
+            <div class="result-text">T-skóre: <strong>${totT}</strong></div>
+            <div class="result-text">Interpretácia: <strong>${interpretTOT(totT)}</strong></div>
+        </div>
 
+        <div class="result-card">
+            <div class="result-title">RES – Štýl odpovedí</div>
+            <div class="result-text">Počet ÁNO: <strong>${yesCount}</strong></div>
+            <div class="result-text">Počet NIE: <strong>${noCount}</strong></div>
+        </div>
 
-    // SUBŠKÁLY
-    out += "<h3>Subškály</h3>";
+        <div class="result-card">
+            <div class="result-title">Subškály</div>
+
+            <table class="subscale-table">
+                <tr>
+                    <th>Škála</th>
+                    <th>RAW</th>
+                    <th>T</th>
+                    <th>Interpretácia</th>
+                </tr>
+    `;
 
     let tScores = [];
 
@@ -416,27 +379,29 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         let raw = 0;
         scales[scale].forEach(q => raw += scoreItem(q));
         let T = T_TABLE[scale][raw] ?? null;
-
-        out += `<p><strong>${scale}</strong>: RAW ${raw}, 
-                T ${T} (${T !== null ? interpretSubscale(T) : "N/A"})</p>`;
-
         tScores.push(T ?? 0);
+
+        out += `
+            <tr>
+                <td>${scale}</td>
+                <td>${raw}</td>
+                <td>${T}</td>
+                <td>${interpretSubscale(T)}</td>
+            </tr>
+        `;
     }
 
-    resultsDiv.innerHTML = out;
+    out += `</table></div>`;
 
-    // -----------------------------------
-    // RADAR GRAF
-    // -----------------------------------
+    document.getElementById("results").innerHTML = out;
 
-    const ctx = document.getElementById("radarChart");
-
-    new Chart(ctx, {
+    /* RADAR CHART */
+    new Chart(document.getElementById("radarChart"), {
         type: 'radar',
         data: {
             labels: ['BEH','INT','PHY','FRE','POP','HAP'],
             datasets: [{
-                label: 'T-skóre subškál',
+                label: 'T-skóre',
                 data: tScores,
                 fill: true,
                 backgroundColor: "rgba(0,123,255,0.25)",
@@ -445,12 +410,7 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
             }]
         },
         options: {
-            scales: {
-                r: {
-                    suggestedMin: 30,
-                    suggestedMax: 80
-                }
-            }
+            scales: { r: { suggestedMin: 30, suggestedMax: 80 } }
         }
     });
 
