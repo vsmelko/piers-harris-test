@@ -148,7 +148,7 @@ const keyedNo = [
     36,37,38,40,43,45,47,48,51,52,56,57,58,59
 ];
 
-// -----------------------------------------
+// -----------------------------------------  pozor pre pop otazka 39 sa pocita bod ked je nie pre pozitivne sebepojeti
 // SUBSCALE ITEMS
 // -----------------------------------------
 
@@ -259,13 +259,27 @@ TOT: {
 // INTERPRETÁCIA T-skóre
 // -----------------------------------------
 
-function interpret(T) {
-    if (T >= 70) return "Výrazne nadpriemerné";
+function interpretTOT(T) {
+    if (T >= 70) return "Výrazný nadpriemer";
     if (T >= 60) return "Nadpriemer";
+    if (T >= 56) return "Vyšší priemer";
     if (T >= 45) return "Priemer";
     if (T >= 40) return "Nižší priemer";
-    return "Podpriemer";
+    if (T >= 30) return "Podpriemer";
+    return "Výrazný podpriemer";
 }
+
+// -----------------------------------------
+// INTERPRETÁCIA T-skóre — Subškály
+// -----------------------------------------
+function interpretSubscale(T) {
+    if (T >= 56) return "Nadpriemer";
+    if (T >= 45) return "Priemer";
+    if (T >= 40) return "Nižší priemer";
+    if (T >= 30) return "Podpriemer";
+    return "Výrazný podpriemer";
+}
+
 
 // -----------------------------------------
 // GENERÁCIA OTÁZOK
@@ -380,7 +394,7 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
 
     out += `<p><strong>TOT RAW:</strong> ${totRaw}, 
             <strong>TOT T:</strong> ${totT} 
-            (${totT !== null ? interpret(totT) : "N/A"})</p>`;
+            (${totT !== null ? interpretTOT(totT) : "N/A"})</p>`;
 
     // RES – Response Style (počet ÁNO a NIE)
         let yesCount = Object.values(answers).filter(v => v === 1).length;
@@ -404,7 +418,7 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         let T = T_TABLE[scale][raw] ?? null;
 
         out += `<p><strong>${scale}</strong>: RAW ${raw}, 
-                T ${T} (${T !== null ? interpret(T) : "N/A"})</p>`;
+                T ${T} (${T !== null ? interpretSubscale(T) : "N/A"})</p>`;
 
         tScores.push(T ?? 0);
     }
