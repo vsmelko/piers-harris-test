@@ -281,13 +281,28 @@ for (let i = 1; i <= 60; i++) {
     const div = document.createElement("div");
     div.classList.add("question");
     div.id = `q-${i}`;
-    div.innerHTML = `
-        <div>
-            <strong>${i}.</strong>
-            <span class="answer-label" id="ans-${i}"></span>
-        </div>
-        <div class="explain-label">1 = Áno, 0 = Nie</div>
-    `;
+let yesScore = 0;
+let noScore = 0;
+
+if (keyedYes.includes(i)) {
+    yesScore = 1;
+    noScore = 0;
+} else {
+    yesScore = 0;
+    noScore = 1;
+}
+
+div.innerHTML = `
+    <div>
+        <strong>${i}.</strong>
+        <span style="font-size:13px; color:#666; margin-left:6px;">
+            (ÁNO = ${yesScore} b, NIE = ${noScore} b)
+        </span>
+        <span class="answer-label" id="ans-${i}"></span>
+    </div>
+    <div class="explain-label">1 = Áno, 0 = Nie</div>
+`;
+
     form.appendChild(div);
 }
 
