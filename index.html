@@ -161,7 +161,7 @@ const SCALE_NAMES = {
     HAP: "Štěstí a spokojenost"
 };
 
-/* ------------- KEYING (scoring) ------------- */
+/* ---------- KEYING (scoring) ---------- */
 const keyedYes = [
     2,5,9,12,15,16,18,22,24,26,28,
     31,33,34,39,41,42,44,46,49,50,
@@ -174,7 +174,7 @@ const keyedNo = [
     45,47,48,51,52,56,57,58,59
 ];
 
-/* ------------- SUBSCALES ------------- */
+/* ---------- SUBSCALES ---------- */
 const scales = {
     BEH: [12,13,14,18,19,20,27,30,36,38,45,48,58,60],
     INT: [5,7,12,16,18,21,22,24,25,26,34,39,43,50,52,55],
@@ -184,8 +184,7 @@ const scales = {
     HAP: [2,8,28,31,35,40,42,49,53,60]
 };
 
-/* ------------- VALIDITA – PRESNE PODĽA TEBA ------------- */
-
+/* ---------- VALIDITA – PODĽA TVOJHO PRAVIDLA ---------- */
 const INC_PAIRS = [
     { a: 1,  b: 47, aScore: 0, bScore: 1 },
     { a: 2,  b: 42, aScore: 0, bScore: 1 },
@@ -204,7 +203,19 @@ const INC_PAIRS = [
     { a: 53, b: 60, aScore: 1, bScore: 0 }
 ];
 
-/* ---------- RES T-SCORE TABLE (upravené) ---------- */
+/* ---------- INC T-SKÓRE TABUĽKA ---------- */
+function incToT(inc) {
+    if (inc === 0) return 37;
+    if (inc === 1) return 47;
+    if (inc === 2) return 57;
+    if (inc === 3) return 67;
+    if (inc === 4) return 73;
+    if (inc === 5) return 78;
+    if (inc === 6) return 79;
+    return 80; 
+}
+
+/* ---------- RES T TABUĽKA ---------- */
 const RES_T_TABLE = {
     0:23,1:23,2:23,3:23,4:23,5:23,6:23,7:23,8:23,9:23,
     10:23,11:23,12:23,13:23,14:24,15:26,16:28,17:30,18:31,
@@ -215,7 +226,7 @@ const RES_T_TABLE = {
     53:80,54:80,55:80,56:80,57:80,58:80,59:80,60:80
 };
 
-/* ---------- T TABLE (TOT + subscales) ---------- */
+/* ---------- T-TABLE TOT + subscales ---------- */
 const T_TABLE = {
     TOT: {
         0:20,1:20,2:20,3:20,4:20,5:20,6:20,7:20,8:20,9:20,
@@ -236,7 +247,7 @@ const T_TABLE = {
     HAP: {0:20,1:22,2:26,3:30,4:34,5:38,6:43,7:47,8:51,9:55,10:59}
 };
 
-/* ---------- Interpretácia ---------- */
+/* ---------- Interpretácie ---------- */
 function interpretTOT(T) {
     if (T >= 70) return "Výrazný nadpriemer";
     if (T >= 60) return "Nadpriemer";
@@ -255,19 +266,18 @@ function interpretSubscale(T) {
     return "Výrazný podpriemer";
 }
 
-/* ---------- Generate UI questions ---------- */
+/* ---------- UI – GENERATE QUESTIONS ---------- */
 let answers = {};
 let activeQuestion = 1;
 const form = document.getElementById("testForm");
 
 for (let i = 1; i <= 60; i++) {
-
     const div = document.createElement("div");
     div.classList.add("question");
     div.id = `q-${i}`;
 
-    let yesScore = keyedYes.includes(i) ? 1 : 0;
-    let noScore  = keyedNo.includes(i)  ? 1 : 0;
+    const yesScore = keyedYes.includes(i) ? 1 : 0;
+    const noScore  = keyedNo.includes(i)  ? 1 : 0;
 
     div.innerHTML = `
         <div>
@@ -294,7 +304,7 @@ function highlightActive() {
     }
     const q = document.getElementById(`q-${activeQuestion}`);
     q.classList.add("active");
-    q.scrollIntoView({ behavior: "smooth", block: "center" });
+    q.scrollIntoView({ behavior:"smooth", block:"center" });
 }
 
 highlightActive();
@@ -314,17 +324,18 @@ document.addEventListener("keydown", function(e) {
     highlightActive();
 });
 
-
-/* ---------- SCORE FUNCTION ---------- */
+/* ---------- Compute scoreItem ---------- */
 function scoreItem(num) {
-    if (ignoredItems.has(num)) return 0;
+    if (ignored.has(num)) return 0;
     if (keyedYes.includes(num)) return answers[num] === 1 ? 1 : 0;
     if (keyedNo.includes(num))  return answers[num] === 0 ? 1 : 0;
     return 0;
 }
 
+/* ------------------------------------------------ */
+/* ---------- EVALUATE RESULTS -------------------- */
+/* ------------------------------------------------ */
 
-/* ---------- EVALUATE ---------- */
 document.getElementById("btnEvaluate").addEventListener("click", () => {
 
     if (Object.keys(answers).length < 60) {
@@ -332,50 +343,45 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         return;
     }
 
-    /* ---- VALIDITA ---- */
-    ignoredItems = new Set();
+    ignored = new Set();
     let incErrors = 0;
-    let incList = [];
+   let incList = [];
 
     INC_PAIRS.forEach(p => {
-
-        const scoreA = scoreItem(p.a);
-        const scoreB = scoreItem(p.b);
-
-        if (scoreA === p.aScore && scoreB === p.bScore) {
+        const A = scoreItem(p.a);
+        const B = scoreItem(p.b);
+        if (A === p.aScore && B === p.bScore) {
             incErrors++;
-            ignoredItems.add(p.a);
-            incList.push(`${p.a} → ${p.b}`);
+            ignored.add(p.a);
+            incList.push(`${p.a}–${p.b}`);
         }
     });
 
     /* ---- TOT ---- */
     let totRaw = 0;
-    for (let i = 1; i <= 60; i++) {
-        totRaw += scoreItem(i);
-    }
+    for (let i = 1; i <= 60; i++) totRaw += scoreItem(i);
     let totT = T_TABLE.TOT[totRaw];
 
     /* ---- RES ---- */
     let yesCount = Object.values(answers).filter(v => v === 1).length;
     let resT = RES_T_TABLE[yesCount];
 
-    /* ---- BUILD RESULTS ---- */
+    /* ---- RESULTS OUTPUT ---- */
     let out = `
 <div class="result-card">
     <div class="result-title">Výsledky</div>
 
-    <table class="subscale-table" style="margin-bottom:18px;">
-        <tr><th style="width:220px;">Parameter</th><th>Hodnota</th></tr>
+    <table class="subscale-table">
+        <tr><th>Parameter</th><th>Hodnota</th></tr>
 
         <tr>
-            <td><strong>Validita</strong></td>
-            <td>
-                ${incErrors === 0 
-                    ? "Test je platný" 
-                    : `NEPLATNÝ – inkonzistencií: ${incErrors}<br>
-                       <span style='font-size:13px; color:#555'>(${incList.join(", ")})</span>`}
-            </td>
+            <td><strong>INC – počet inkonzistencií</strong></td>
+            <td>${incErrors} ${incList.length ? `(${incList.join(", ")})` : ""}</td>
+        </tr>
+
+        <tr>
+            <td><strong>INC – T skóre</strong></td>
+            <td>${incToT(incErrors)}</td>
         </tr>
 
         <tr>
@@ -384,7 +390,7 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         </tr>
 
         <tr>
-            <td><strong>TOT T-skóre</strong></td>
+            <td><strong>TOT – T skóre</strong></td>
             <td>${totT} (${interpretTOT(totT)})</td>
         </tr>
 
@@ -399,12 +405,12 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         </tr>
     </table>
 
-    <div class="result-title" style="margin-top:25px;">Subškály</div>
+    <div class="result-title" style="margin-top:20px;">Subškály</div>
 
     <table class="subscale-table">
         <tr>
             <th>Skratka</th>
-            <th>Názov škály</th>
+            <th>Názov</th>
             <th>Otázky (počítané)</th>
             <th>RAW</th>
             <th>T</th>
@@ -413,7 +419,6 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
 `;
 
     for (let scale in scales) {
-
         let counted = [];
         let raw = 0;
 
@@ -423,25 +428,24 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
             raw += s;
         });
 
-        let T = T_TABLE[scale][raw];
+        const T = T_TABLE[scale][raw];
 
         out += `
-            <tr>
-                <td><strong>${scale}</strong></td>
-                <td>${SCALE_NAMES[scale]}</td>
-                <td>${counted.join(", ")}</td>
-                <td>${raw}</td>
-                <td>${T}</td>
-                <td>${interpretSubscale(T)}</td>
-            </tr>
-        `;
+        <tr>
+            <td><strong>${scale}</strong></td>
+            <td>${SCALE_NAMES[scale]}</td>
+            <td>${counted.join(", ")}</td>
+            <td>${raw}</td>
+            <td>${T}</td>
+            <td>${interpretSubscale(T)}</td>
+        </tr>`;
     }
 
     out += `</table></div>`;
-
     document.getElementById("results").innerHTML = out;
 });
 </script>
+
 
 
 
