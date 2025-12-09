@@ -161,6 +161,19 @@ const SCALE_NAMES = {
     HAP: "Štěstí a spokojenost"
 };
 
+
+function incToT(inc) {
+    if (inc === 0) return 37;
+    if (inc === 1) return 47;
+    if (inc === 2) return 57;
+    if (inc === 3) return 67;
+    if (inc === 4) return 73;
+    if (inc === 5) return 78;
+    if (inc === 6) return 79;
+    return 80; 
+}
+
+
 /* ------------- KEYING ------------- */
 const keyedYes = [
     2,5,9,12,15,16,18,22,24,26,28,
@@ -347,6 +360,12 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
             <td><strong>Validita</strong></td>
             <td>${incErrors === 0 ? "Test je platný" : "NEPLATNÝ – inkonzistencií: " + incErrors}</td>
         </tr>
+
+        <tr>
+            <td><strong>INC – T skóre</strong></td>
+            <td>${incToT(incErrors)}</td>
+        </tr>
+
 
         <tr>
             <td><strong>TOT – Celkové RAW</strong></td>
