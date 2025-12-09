@@ -217,6 +217,21 @@ const INC_PAIRS = [
 ];
 
 /* ------------- T-TABLES ------------- */
+
+
+/* ---------- RES T-SCORE TABLE ---------- */
+
+const RES_T_TABLE = {
+    0: 23, 1: 23, 2: 23, 3: 23, 4: 23, 5: 23, 6: 23, 7: 23,
+    8: 23, 9: 23, 10: 23, 11: 23, 12: 23, 13: 23,
+    14: 24,
+    15: 26,
+    16: 28,
+    17: 30,
+    18: 31,
+    19: 33
+};
+
 const T_TABLE = {
     TOT: {
         0:20,1:20,2:20,3:20,4:20,5:20,6:20,7:20,8:20,9:20,
@@ -346,6 +361,8 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
     /* ---------- RES ---------- */
     let yesCount = Object.values(answers).filter(v => v === 1).length;
     let noCount = 60 - yesCount;
+    
+    let resT = RES_T_TABLE[yesCount] ?? "—";
 
     /* ---------- BUILD RESULTS ---------- */
     let out = `
@@ -383,9 +400,10 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         </tr>
 
         <tr>
-            <td><strong>RES – počet NIE</strong></td>
-            <td>${noCount}</td>
+            <td><strong>RES – T skóre</strong></td>
+            <td>${resT}</td>
         </tr>
+
     </table>
 
     <div class="result-title" style="margin-top:25px;">Subškály</div>
