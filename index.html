@@ -161,20 +161,7 @@ const SCALE_NAMES = {
     HAP: "Štěstí a spokojenost"
 };
 
-
-function incToT(inc) {
-    if (inc === 0) return 37;
-    if (inc === 1) return 47;
-    if (inc === 2) return 57;
-    if (inc === 3) return 67;
-    if (inc === 4) return 73;
-    if (inc === 5) return 78;
-    if (inc === 6) return 79;
-    return 80; 
-}
-
-
-/* ------------- KEYING ------------- */
+/* ------------- KEYING (scoring) ------------- */
 const keyedYes = [
     2,5,9,12,15,16,18,22,24,26,28,
     31,33,34,39,41,42,44,46,49,50,
@@ -197,88 +184,38 @@ const scales = {
     HAP: [2,8,28,31,35,40,42,49,53,60]
 };
 
-/* ------------- VALIDITA – INKONZISTENCIE ------------- */
+/* ------------- VALIDITA – PRESNE PODĽA TEBA ------------- */
+
 const INC_PAIRS = [
-    { a: 1,  b: 47, badA: 0, badB: 1 },
-    { a: 2,  b: 42, badA: 0, badB: 1 },
-    { a: 3,  b: 41, badA: 1, badB: 0 },
-    { a: 4,  b: 40, badA: 1, badB: 0 },
-    { a: 5,  b: 43, badA: 0, badB: 1 },
-    { a: 7,  b: 10, badA: 0, badB: 1 },
-    { a: 9,  b: 51, badA: 1, badB: 0 },
-    { a: 14, b: 20, badA: 1, badB: 0 },
-    { a: 18, b: 21, badA: 0, badB: 1 },
-    { a: 19, b: 27, badA: 0, badB: 1 },
-    { a: 26, b: 39, badA: 0, badB: 1 },
-    { a: 29, b: 56, badA: 1, badB: 0 },
-    { a: 31, b: 35, badA: 0, badB: 1 },
-    { a: 44, b: 49, badA: 1, badB: 0 },
-    { a: 53, b: 60, badA: 1, badB: 0 }
+    { a: 1,  b: 47, aScore: 0, bScore: 1 },
+    { a: 2,  b: 42, aScore: 0, bScore: 1 },
+    { a: 3,  b: 41, aScore: 1, bScore: 0 },
+    { a: 4,  b: 40, aScore: 1, bScore: 0 },
+    { a: 5,  b: 43, aScore: 0, bScore: 1 },
+    { a: 7,  b: 10, aScore: 0, bScore: 1 },
+    { a: 9,  b: 51, aScore: 1, bScore: 0 },
+    { a: 14, b: 20, aScore: 1, bScore: 0 },
+    { a: 18, b: 21, aScore: 0, bScore: 1 },
+    { a: 19, b: 27, aScore: 0, bScore: 1 },
+    { a: 26, b: 39, aScore: 0, bScore: 1 },
+    { a: 29, b: 56, aScore: 1, bScore: 0 },
+    { a: 31, b: 35, aScore: 0, bScore: 1 },
+    { a: 44, b: 49, aScore: 1, bScore: 0 },
+    { a: 53, b: 60, aScore: 1, bScore: 0 }
 ];
 
-/* ------------- T-TABLES ------------- */
-
-
-/* ---------- RES T-SCORE TABLE ---------- */
-
+/* ---------- RES T-SCORE TABLE (upravené) ---------- */
 const RES_T_TABLE = {
-    0: 23, 1: 23, 2: 23, 3: 23, 4: 23, 5: 23, 6: 23, 7: 23,
-    8: 23, 9: 23, 10: 23, 11: 23, 12: 23, 13: 23,
-
-    14: 24,
-    15: 26,
-    16: 28,
-    17: 30,
-    18: 31,
-    19: 33,
-    20: 35,
-    21: 37,
-    22: 39,
-    23: 40,
-    24: 42,
-    25: 44,
-    26: 46,
-    27: 47,
-    28: 49,
-    29: 51,
-
-    30: 53,
-    31: 55,
-    32: 56,
-    33: 58,
-    34: 60,
-    35: 62,
-    36: 64,
-    37: 65,
-    38: 67,
-    39: 69,
-
-    40: 71,
-    41: 72,
-    42: 74,
-    43: 76,
-    44: 78,
-
-    // -------- EXTREME VALUES ---------
-    45: 80,
-    46: 80,
-    47: 80,
-    48: 80,
-    49: 80,
-    50: 80,
-    51: 80,
-    52: 80,
-    53: 80,
-    54: 80,
-    55: 80,
-    56: 80,
-    57: 80,
-    58: 80,
-    59: 80,
-    60: 80
+    0:23,1:23,2:23,3:23,4:23,5:23,6:23,7:23,8:23,9:23,
+    10:23,11:23,12:23,13:23,14:24,15:26,16:28,17:30,18:31,
+    19:33,20:35,21:37,22:39,23:40,24:42,25:44,26:46,27:47,
+    28:49,29:51,30:53,31:55,32:56,33:58,34:60,35:62,36:64,
+    37:65,38:67,39:69,40:71,41:72,42:74,43:76,44:78,
+    45:80,46:80,47:80,48:80,49:80,50:80,51:80,52:80,
+    53:80,54:80,55:80,56:80,57:80,58:80,59:80,60:80
 };
 
-
+/* ---------- T TABLE (TOT + subscales) ---------- */
 const T_TABLE = {
     TOT: {
         0:20,1:20,2:20,3:20,4:20,5:20,6:20,7:20,8:20,9:20,
@@ -299,7 +236,7 @@ const T_TABLE = {
     HAP: {0:20,1:22,2:26,3:30,4:34,5:38,6:43,7:47,8:51,9:55,10:59}
 };
 
-/* ------------- INTERPRETÁCIA ------------- */
+/* ---------- Interpretácia ---------- */
 function interpretTOT(T) {
     if (T >= 70) return "Výrazný nadpriemer";
     if (T >= 60) return "Nadpriemer";
@@ -318,43 +255,34 @@ function interpretSubscale(T) {
     return "Výrazný podpriemer";
 }
 
-/* ------------- GENERATE QUESTIONS ------------- */
+/* ---------- Generate UI questions ---------- */
 let answers = {};
 let activeQuestion = 1;
-
 const form = document.getElementById("testForm");
 
 for (let i = 1; i <= 60; i++) {
+
     const div = document.createElement("div");
     div.classList.add("question");
     div.id = `q-${i}`;
-let yesScore = 0;
-let noScore = 0;
 
-if (keyedYes.includes(i)) {
-    yesScore = 1;
-    noScore = 0;
-} else {
-    yesScore = 0;
-    noScore = 1;
-}
+    let yesScore = keyedYes.includes(i) ? 1 : 0;
+    let noScore  = keyedNo.includes(i)  ? 1 : 0;
 
-div.innerHTML = `
-    <div>
-        <strong>${i}.</strong>
-        <span style="font-size:13px; color:#666; margin-left:6px;">
-            (ÁNO = ${yesScore} b, NIE = ${noScore} b)
-        </span>
-        <span class="answer-label" id="ans-${i}"></span>
-    </div>
-    <div class="explain-label">1 = Áno, 0 = Nie</div>
-`;
+    div.innerHTML = `
+        <div>
+            <strong>${i}.</strong>
+            <span style="font-size:13px; color:#666; margin-left:6px;">
+                (ÁNO = ${yesScore} b, NIE = ${noScore} b)
+            </span>
+            <span class="answer-label" id="ans-${i}"></span>
+        </div>
+        <div class="explain-label">1 = Áno, 0 = Nie</div>
+    `;
 
     form.appendChild(div);
-}
 
-for (let i = 1; i <= 60; i++) {
-    document.getElementById(`q-${i}`).addEventListener("click", () => {
+    div.addEventListener("click", () => {
         activeQuestion = i;
         highlightActive();
     });
@@ -371,22 +299,32 @@ function highlightActive() {
 
 highlightActive();
 
-/* ------------- ANSWERS VIA KEYBOARD ------------- */
+/* ---------- Keyboard input ---------- */
 document.addEventListener("keydown", function(e) {
-    if (e.key === "1" || e.key === "0") {
-        const value = Number(e.key);
-        answers[activeQuestion] = value;
+    if (e.key !== "1" && e.key !== "0") return;
 
-        const ansLabel = document.getElementById(`ans-${activeQuestion}`);
-        ansLabel.textContent = value === 1 ? "ÁNO" : "NIE";
-        ansLabel.style.color = value === 1 ? "#007bff" : "#ff4d4d";
+    const value = Number(e.key);
+    answers[activeQuestion] = value;
 
-        if (activeQuestion < 60) activeQuestion++;
-        highlightActive();
-    }
+    const ansLabel = document.getElementById(`ans-${activeQuestion}`);
+    ansLabel.textContent = value === 1 ? "ÁNO" : "NIE";
+    ansLabel.style.color = value === 1 ? "#007bff" : "#ff4d4d";
+
+    if (activeQuestion < 60) activeQuestion++;
+    highlightActive();
 });
 
-/* ------------- EVALUATE ------------- */
+
+/* ---------- SCORE FUNCTION ---------- */
+function scoreItem(num) {
+    if (ignoredItems.has(num)) return 0;
+    if (keyedYes.includes(num)) return answers[num] === 1 ? 1 : 0;
+    if (keyedNo.includes(num))  return answers[num] === 0 ? 1 : 0;
+    return 0;
+}
+
+
+/* ---------- EVALUATE ---------- */
 document.getElementById("btnEvaluate").addEventListener("click", () => {
 
     if (Object.keys(answers).length < 60) {
@@ -394,42 +332,37 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         return;
     }
 
-    /* ---------- VALIDITA ---------- */
+    /* ---- VALIDITA ---- */
+    ignoredItems = new Set();
     let incErrors = 0;
-    let ignoredItems = new Set();
+    let incList = [];
 
     INC_PAIRS.forEach(p => {
-        if (answers[p.a] === p.badA && answers[p.b] === p.badB) {
+
+        const scoreA = scoreItem(p.a);
+        const scoreB = scoreItem(p.b);
+
+        if (scoreA === p.aScore && scoreB === p.bScore) {
             incErrors++;
             ignoredItems.add(p.a);
+            incList.push(`${p.a} → ${p.b}`);
         }
     });
 
-    /* ---------- SCORE FUNCTION ---------- */
-    function scoreItem(num) {
-        if (ignoredItems.has(num)) return 0;
-
-        if (keyedYes.includes(num)) return answers[num] === 1 ? 1 : 0;
-        if (keyedNo.includes(num))  return answers[num] === 0 ? 1 : 0;
-
-        return 0;
-    }
-
-    /* ---------- TOT ---------- */
+    /* ---- TOT ---- */
     let totRaw = 0;
-    for (let i = 1; i <= 60; i++) totRaw += scoreItem(i);
+    for (let i = 1; i <= 60; i++) {
+        totRaw += scoreItem(i);
+    }
     let totT = T_TABLE.TOT[totRaw];
 
-    /* ---------- RES ---------- */
+    /* ---- RES ---- */
     let yesCount = Object.values(answers).filter(v => v === 1).length;
-    let noCount = 60 - yesCount;
-    
-    let resT = RES_T_TABLE[yesCount] ?? "—";
+    let resT = RES_T_TABLE[yesCount];
 
-    /* ---------- BUILD RESULTS ---------- */
+    /* ---- BUILD RESULTS ---- */
     let out = `
 <div class="result-card">
-
     <div class="result-title">Výsledky</div>
 
     <table class="subscale-table" style="margin-bottom:18px;">
@@ -437,22 +370,21 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
 
         <tr>
             <td><strong>Validita</strong></td>
-            <td>${incErrors === 0 ? "Test je platný" : "NEPLATNÝ – inkonzistencií: " + incErrors}</td>
+            <td>
+                ${incErrors === 0 
+                    ? "Test je platný" 
+                    : `NEPLATNÝ – inkonzistencií: ${incErrors}<br>
+                       <span style='font-size:13px; color:#555'>(${incList.join(", ")})</span>`}
+            </td>
         </tr>
 
         <tr>
-            <td><strong>INC – T skóre</strong></td>
-            <td>${incToT(incErrors)}</td>
-        </tr>
-
-
-        <tr>
-            <td><strong>TOT – Celkové RAW</strong></td>
+            <td><strong>TOT RAW</strong></td>
             <td>${totRaw}</td>
         </tr>
 
         <tr>
-            <td><strong>TOT – T skóre</strong></td>
+            <td><strong>TOT T-skóre</strong></td>
             <td>${totT} (${interpretTOT(totT)})</td>
         </tr>
 
@@ -465,7 +397,6 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
             <td><strong>RES – T skóre</strong></td>
             <td>${resT}</td>
         </tr>
-
     </table>
 
     <div class="result-title" style="margin-top:25px;">Subškály</div>
@@ -474,25 +405,31 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         <tr>
             <th>Skratka</th>
             <th>Názov škály</th>
+            <th>Otázky (počítané)</th>
             <th>RAW</th>
             <th>T</th>
             <th>Interpretácia</th>
         </tr>
 `;
 
-    let tScores = [];
-
     for (let scale in scales) {
-        let raw = 0;
-        scales[scale].forEach(q => raw += scoreItem(q));
 
-        let T = T_TABLE[scale][raw] ?? null;
-        tScores.push(T ?? 0);
+        let counted = [];
+        let raw = 0;
+
+        scales[scale].forEach(q => {
+            const s = scoreItem(q);
+            if (s === 1) counted.push(q);
+            raw += s;
+        });
+
+        let T = T_TABLE[scale][raw];
 
         out += `
             <tr>
                 <td><strong>${scale}</strong></td>
                 <td>${SCALE_NAMES[scale]}</td>
+                <td>${counted.join(", ")}</td>
                 <td>${raw}</td>
                 <td>${T}</td>
                 <td>${interpretSubscale(T)}</td>
@@ -500,15 +437,13 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         `;
     }
 
-    out += `
-        </table>
-</div>
-`;
+    out += `</table></div>`;
 
     document.getElementById("results").innerHTML = out;
-
 });
 </script>
+
+
 
 </body>
 </html>
