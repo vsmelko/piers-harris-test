@@ -151,7 +151,7 @@
 </div>
 
 <script>
-/* ------------- KEYING ------------- */
+/* ------------- SCALE NAMES ------------- */
 const SCALE_NAMES = {
     BEH: "Chování a sebekontrola",
     INT: "Intelekt a školní status",
@@ -161,7 +161,7 @@ const SCALE_NAMES = {
     HAP: "Štěstí a spokojenost"
 };
 
-
+/* ------------- KEYING ------------- */
 const keyedYes = [
     2,5,9,12,15,16,18,22,24,26,28,
     31,33,34,39,41,42,44,46,49,50,
@@ -169,12 +169,12 @@ const keyedYes = [
 ];
 
 const keyedNo = [
-    1,3,4,6,7,8,10,11,13,14,17,19,20,21,23,25,27,29,30,32,35,
-    36,37,38,40,43,45,47,48,51,52,56,57,58,59
+    1,3,4,6,7,8,10,11,13,14,17,19,20,21,
+    23,25,27,29,30,32,35,36,37,38,40,43,
+    45,47,48,51,52,56,57,58,59
 ];
 
 /* ------------- SUBSCALES ------------- */
-
 const scales = {
     BEH: [12,13,14,18,19,20,27,30,36,38,45,48,58,60],
     INT: [5,7,12,16,18,21,22,24,25,26,34,39,43,50,52,55],
@@ -185,7 +185,6 @@ const scales = {
 };
 
 /* ------------- VALIDITA – INKONZISTENCIE ------------- */
-
 const INC_PAIRS = [
     { a: 1,  b: 47, badA: 0, badB: 1 },
     { a: 2,  b: 42, badA: 0, badB: 1 },
@@ -205,7 +204,6 @@ const INC_PAIRS = [
 ];
 
 /* ------------- T-TABLES ------------- */
-
 const T_TABLE = {
     TOT: {
         0:20,1:20,2:20,3:20,4:20,5:20,6:20,7:20,8:20,9:20,
@@ -227,7 +225,6 @@ const T_TABLE = {
 };
 
 /* ------------- INTERPRETÁCIA ------------- */
-
 function interpretTOT(T) {
     if (T >= 70) return "Výrazný nadpriemer";
     if (T >= 60) return "Nadpriemer";
@@ -247,7 +244,6 @@ function interpretSubscale(T) {
 }
 
 /* ------------- GENERATE QUESTIONS ------------- */
-
 let answers = {};
 let activeQuestion = 1;
 
@@ -278,22 +274,14 @@ function highlightActive() {
     for (let i = 1; i <= 60; i++) {
         document.getElementById(`q-${i}`).classList.remove("active");
     }
-
     const q = document.getElementById(`q-${activeQuestion}`);
     q.classList.add("active");
-
-    // 🔥 toto zabezpečí automatické posúvanie
-    q.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
+    q.scrollIntoView({ behavior: "smooth", block: "center" });
 }
-
 
 highlightActive();
 
 /* ------------- ANSWERS VIA KEYBOARD ------------- */
-
 document.addEventListener("keydown", function(e) {
     if (e.key === "1" || e.key === "0") {
         const value = Number(e.key);
@@ -309,7 +297,6 @@ document.addEventListener("keydown", function(e) {
 });
 
 /* ------------- EVALUATE ------------- */
-
 document.getElementById("btnEvaluate").addEventListener("click", () => {
 
     if (Object.keys(answers).length < 60) {
@@ -317,35 +304,38 @@ document.getElementById("btnEvaluate").addEventListener("click", () => {
         return;
     }
 
-    let out = "";
-
-    /* VALIDITA */
+    /* ---------- VALIDITA ---------- */
     let incErrors = 0;
+    let ignoredItems = new Set();
 
     INC_PAIRS.forEach(p => {
         if (answers[p.a] === p.badA && answers[p.b] === p.badB) {
             incErrors++;
+            ignoredItems.add(p.a);
         }
     });
 
-    /* SCORING */
+    /* ---------- SCORE FUNCTION ---------- */
     function scoreItem(num) {
+        if (ignoredItems.has(num)) return 0;
+
         if (keyedYes.includes(num)) return answers[num] === 1 ? 1 : 0;
         if (keyedNo.includes(num))  return answers[num] === 0 ? 1 : 0;
+
         return 0;
     }
 
+    /* ---------- TOT ---------- */
     let totRaw = 0;
     for (let i = 1; i <= 60; i++) totRaw += scoreItem(i);
     let totT = T_TABLE.TOT[totRaw];
 
-    /* RES – Response Style */
+    /* ---------- RES ---------- */
     let yesCount = Object.values(answers).filter(v => v === 1).length;
     let noCount = 60 - yesCount;
 
-/* --- BUILD RESULTS HTML --- */
-
-out += `
+    /* ---------- BUILD RESULTS ---------- */
+    let out = `
 <div class="result-card">
 
     <div class="result-title">Výsledky</div>
@@ -391,36 +381,35 @@ out += `
         </tr>
 `;
 
-let tScores = [];
+    let tScores = [];
 
-for (let scale in scales) {
-    let raw = 0;
-    scales[scale].forEach(q => raw += scoreItem(q));
+    for (let scale in scales) {
+        let raw = 0;
+        scales[scale].forEach(q => raw += scoreItem(q));
 
-    let T = T_TABLE[scale][raw] ?? null;
-    tScores.push(T ?? 0);
+        let T = T_TABLE[scale][raw] ?? null;
+        tScores.push(T ?? 0);
+
+        out += `
+            <tr>
+                <td><strong>${scale}</strong></td>
+                <td>${SCALE_NAMES[scale]}</td>
+                <td>${raw}</td>
+                <td>${T}</td>
+                <td>${interpretSubscale(T)}</td>
+            </tr>
+        `;
+    }
 
     out += `
-        <tr>
-            <td><strong>${scale}</strong></td>
-            <td>${SCALE_NAMES[scale]}</td>
-            <td>${raw}</td>
-            <td>${T}</td>
-            <td>${interpretSubscale(T)}</td>
-        </tr>
-    `;
-}
-
-out += `
-    </table>
+        </table>
 </div>
 `;
 
-
     document.getElementById("results").innerHTML = out;
-
 
 });
 </script>
+
 </body>
 </html>
